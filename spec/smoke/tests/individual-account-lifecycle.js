@@ -1,22 +1,5 @@
 WAIT_TIMEOUT = 8000;
-
-// TODO: Refactor into shared file
-switch (process.env.COCO_SMOKE_DOMAIN) {
-  case "local":
-    DOMAIN = 'http://localhost:3000';
-    break;
-  case "next":
-    DOMAIN = 'http://next.codecombat.com';
-    break;
-  case "staging":
-    DOMAIN = 'http://staging.codecombat.com';
-    break;
-  case "prod":
-    DOMAIN = 'https://codecombat.com';
-    break;
-  default:
-    DOMAIN = 'http://localhost:3000';
-}
+DOMAIN = require('../domain');
 
 var timestamp = new Date().getTime(),
   email = `email${timestamp}@${timestamp}.com`,
@@ -32,7 +15,8 @@ module.exports = {
       .resizeWindow(1250, 900)
 
       // Open login modal
-      .executeAsync(function(done) { window.currentView.supermodel.finishLoading.then(done); })
+      //.executeAsync(function(done) { window.currentView.supermodel.finishLoading.then(done); })
+      .waitUntilViewLoads()
       .click('#create-account-link')
   
       // Sign up
@@ -48,7 +32,7 @@ module.exports = {
       .setValue('input[name="name"]', name)
       .setValue('input[name="password"]', password)
       .click('#subscribe-input')
-      .pause(100) // Sometimes create account button does not get clicked 
+      .pause(1000) // Sometimes create account button does not get clicked 
       .click('#create-account-btn')
       .waitForElementVisible('#start-btn', WAIT_TIMEOUT)
       .click('#start-btn')
@@ -68,7 +52,7 @@ module.exports = {
       .waitForElementVisible('.dropdown #logout-button', WAIT_TIMEOUT)
       .click('.dropdown #logout-button')
   },
-
+  
   'Log back in': function (browser) {
     browser
       // Log back in
@@ -87,7 +71,7 @@ module.exports = {
       // Delete account
       .url(`${DOMAIN}/account/settings`)
       .pause(100)
-      .executeAsync(function(done) { window.currentView.supermodel.finishLoading.then(done); })
+      .waitUntilViewLoads()
       .waitForElementVisible('#delete-account-email-or-username', WAIT_TIMEOUT)
       .setValue('#delete-account-email-or-username', email)
       .setValue('#delete-account-password', password)
